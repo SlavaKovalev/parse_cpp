@@ -1,9 +1,18 @@
 import re
 import os
 
-def trace_at_begin(allfile, item, reobj):
+def extract_function_name(template):
+  bracket_pos = template.find("(")
+  last_not_white_space_pos = 0
+  for c in template:
+    if c != " ":
+      break
+    last_not_white_space_pos = last_not_white_space_pos + 1
+  return template[last_not_white_space_pos:bracket_pos]
+
+def trace_at_begin(allfile, item, reobj, what_to_print):
   bfr = allfile[:item.end()]
-  nsrt = "printf(\"Hallo\\n\");"
+  nsrt = "printf(\"{}\\n\");".format(what_to_print)
   tl = allfile[item.end():]
   newallfile = bfr
   newallfile += nsrt
@@ -12,7 +21,7 @@ def trace_at_begin(allfile, item, reobj):
   pos = item.end() + len(nsrt)
   return (allfile, pos)
 
-def trace_at_end(allfile, pos):
+def trace_at_end(allfile, pos, what_to_print):
   open_brace = 1
   close_brace = 0
   while True:
@@ -23,7 +32,7 @@ def trace_at_end(allfile, pos):
       open_brace = open_brace - 1
       if open_brace == 0:
         bfr = allfile[:cb_pos]
-        nsrt = "printf(\"Hallo\\n\");"
+        nsrt = "printf(\"{}\\n\");".format(what_to_print)
         tl = allfile[cb_pos:]
         newallfile = bfr
         newallfile += nsrt
@@ -40,7 +49,7 @@ def trace_at_end(allfile, pos):
       open_brace = open_brace - 1
       if open_brace == 0:
         bfr = allfile[:cb_pos]
-        nsrt = "printf(\"Hallo\\n\");"
+        nsrt = "printf(\"{}\\n\");".format(what_to_print)
         tl = allfile[cb_pos:]
         newallfile = bfr
         newallfile += nsrt
@@ -69,10 +78,11 @@ def add_trace():
                   item = reobj.search(allfile, pos)
                   continue
                 else:
-                  inserted = trace_at_begin(allfile, item, reobj)
+                  fun_name = extract_function_name(item[0])
+                  inserted = trace_at_begin(allfile, item, reobj,fun_name)
                   allfile = inserted[0]
                   pos = inserted[1]
-                  inserted = trace_at_end(allfile, pos)
+                  inserted = trace_at_end(allfile, pos, fun_name)
                   allfile = inserted[0]
                   pos = inserted[1]
                   item = reobj.search(allfile, pos)
