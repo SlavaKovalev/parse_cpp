@@ -12,7 +12,7 @@ def extract_function_name(template):
 
 def trace_at_begin(allfile, item, reobj, what_to_print):
   bfr = allfile[:item.end()]
-  nsrt = "printf(\"{}\\n\");".format(what_to_print)
+  nsrt = "TRACE(L\"{}\\n\");".format(what_to_print)
   tl = allfile[item.end():]
   newallfile = bfr
   newallfile += nsrt
